@@ -5,9 +5,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/mjibson/goread/rss"
+	"github.com/nikolawannabe/epub"
 	"log"
 	"net/http"
-	"github.com/nikolawannabe/epub"
 	"net/url"
 )
 
@@ -15,7 +15,7 @@ const (
 	xhtmlMediaType = "application/xhtml+xml"
 )
 
-type FeedEpub struct {}
+type FeedEpub struct{}
 
 // makeOpf creates an epub opf for the specified rss feed.
 func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter) {
@@ -26,9 +26,9 @@ func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter) {
 	}
 	metadata := epub.Metadata{
 		Language: "en", // maybe, lol!
-		Title: rssFeed.Title,
-		Creator: creator,
-		Date: rssFeed.LastBuildDate,
+		Title:    rssFeed.Title,
+		Creator:  creator,
+		Date:     rssFeed.LastBuildDate,
 	}
 
 	var manifestItems []epub.ManifestItem
@@ -55,15 +55,15 @@ func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter) {
 	}
 
 	opfRootFile := epub.OpfRootFile{
-		FullPath: fmt.Sprintf("XHTML/%s.opf", rssFeed.Title),
-		MediaType: "application/oebps-package+xml",
+		FullPath:   fmt.Sprintf("XHTML/%s.opf", rssFeed.Title),
+		MediaType:  "application/oebps-package+xml",
 		Identifier: id,
-		Metadata: metadata,
-		Manifest: manifest,
+		Metadata:   metadata,
+		Manifest:   manifest,
 	}
 
 	opf := epub.Opf{
-		RootFiles: []epub.OpfRootFile{ opfRootFile},
+		RootFiles: []epub.OpfRootFile{opfRootFile},
 	}
 	return opf, chapters
 }
@@ -130,7 +130,7 @@ func downloadBook(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/epub+zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.epub\"",
-			title))
+		title))
 	w.Write(epubArchive)
 }
 
