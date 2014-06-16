@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"github.com/dchest/uniuri"
+	"errors"
 )
 
 const (
@@ -18,10 +20,13 @@ const (
 type FeedEpub struct{}
 
 // makeOpf creates an epub opf for the specified rss feed.
-func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter) {
-	id := epub.Identifier("this is a random id")
+func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter, error) {
+	if len(rssFeed.Items) == 0 {
+		return epub.Opf{}, nil, errors.New("No feed items to build")
+	}
+	id := epub.Identifier(uniuri.New())
 	creator := epub.Creator{
-		Name: rssFeed.Items[0].Author, // TODO:we should make sure this exists first!
+		Name: rssFeed.Items[0].Author,
 		Role: "aut",
 	}
 	metadata := epub.Metadata{
@@ -65,7 +70,7 @@ func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter) {
 	opf := epub.Opf{
 		RootFiles: []epub.OpfRootFile{opfRootFile},
 	}
-	return opf, chapters
+	return opf, chapters, nil
 }
 
 // getFeed gets the feed for the specified rss url
@@ -98,7 +103,11 @@ func (e FeedEpub) MakeBook(rssUrl string) ([]byte, string, string, error) {
 		log.Printf("Unable to get feed: %s, %v", errString, err)
 		return nil, "", "Server error", err
 	}
-	opf, chapters := e.makeOpf(rssFeed)
+	opf, chapters, err := e.makeOpf(rssFeed)
+	if err != nil {
+		return nil, "", "Unable to generate OPF", err
+	}
+
 	var archive epub.EpubArchive
 	bytes, err := archive.Build(rssFeed.Title, opf, chapters)
 	if err != nil {
