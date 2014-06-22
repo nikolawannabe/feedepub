@@ -135,6 +135,8 @@ func downloadBook(w http.ResponseWriter, r *http.Request) {
 	if errString != "" {
 		w.Write([]byte(errString))
 		log.Printf(errString + fmt.Sprint(": %v", err))
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/epub+zip")
