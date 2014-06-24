@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"github.com/mjibson/goread/rss"
 	"github.com/nikolawannabe/epub"
+
 	"log"
 	"net/http"
 	"net/url"
-	"github.com/dchest/uniuri"
 	"errors"
+	"github.com/nikolawannabe/epub/onix/codelist5"
 )
 
 const (
@@ -24,7 +25,9 @@ func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter, error) {
 	if len(rssFeed.Items) == 0 {
 		return epub.Opf{}, nil, errors.New("No feed items to build")
 	}
-	id := epub.Identifier(uniuri.New())
+	ids := []epub.Identifier{
+		epub.Identifier{Value: rssFeed.BaseLink(),
+		IdentifierType: codelist5.URN,},}
 	creator := epub.Creator{
 		Name: rssFeed.Items[0].Author,
 		Role: "aut",
@@ -60,9 +63,9 @@ func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter, error) {
 	}
 
 	opfRootFile := epub.OpfRootFile{
-		FullPath:   fmt.Sprintf("XHTML/%s.opf", rssFeed.Title),
+		FullPath:   fmt.Sprintf("OEBPS/%s.opf", rssFeed.Title),
 		MediaType:  "application/oebps-package+xml",
-		Identifier: id,
+		Identifiers: ids,
 		Metadata:   metadata,
 		Manifest:   manifest,
 	}
@@ -133,9 +136,9 @@ func downloadBook(w http.ResponseWriter, r *http.Request) {
 	epubArchive, title, errString, err := feedpub.MakeBook(rssUrl.String())
 
 	if errString != "" {
-		w.Write([]byte(errString))
 		log.Printf(errString + fmt.Sprint(": %v", err))
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errString))
 		return
 	}
 
