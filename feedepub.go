@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/mjibson/goread/rss"
 	"github.com/nikolawannabe/epub"
-
 	"log"
 	"net/http"
 	"net/url"
@@ -49,6 +48,7 @@ func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter, error) {
 		manifestItem.Id = fmt.Sprintf("manifest_id_%d", i)
 		filename := "chapters/" + item.Title + ".xhtml"
 		manifestItem.Href = filename
+		manifestItem.Title = &item.Title
 		chapter.FileName = filename
 		// TODO: we should fetch all the assets used in each rss item and put them in the
 		// epub in an assets directory, then rewrite the paths to each asset.  At the
