@@ -1,16 +1,18 @@
+// Package main creates a binary called feedepub that creates an http server that can generate an
+// epub for the given rss url.
 package main
 
 import (
 	"code.google.com/p/go-charset/charset"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"github.com/mjibson/goread/rss"
 	"github.com/nikolawannabe/epub"
+	"github.com/nikolawannabe/epub/onix/codelist5"
 	"log"
 	"net/http"
 	"net/url"
-	"errors"
-	"github.com/nikolawannabe/epub/onix/codelist5"
 )
 
 const (
@@ -25,8 +27,8 @@ func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter, error) {
 		return epub.Opf{}, nil, errors.New("No feed items to build")
 	}
 	ids := []epub.Identifier{
-		epub.Identifier{Value: rssFeed.BaseLink(),
-		IdentifierType: codelist5.URN,},}
+		{Value: rssFeed.BaseLink(),
+			IdentifierType: codelist5.URN}}
 	creator := epub.Creator{
 		Name: rssFeed.Items[0].Author,
 		Role: "aut",
@@ -63,11 +65,11 @@ func (e FeedEpub) makeOpf(rssFeed rss.Rss) (epub.Opf, []epub.Chapter, error) {
 	}
 
 	opfRootFile := epub.OpfRootFile{
-		FullPath:   fmt.Sprintf("OEBPS/%s.opf", rssFeed.Title),
-		MediaType:  "application/oebps-package+xml",
+		FullPath:    fmt.Sprintf("OEBPS/%s.opf", rssFeed.Title),
+		MediaType:   "application/oebps-package+xml",
 		Identifiers: ids,
-		Metadata:   metadata,
-		Manifest:   manifest,
+		Metadata:    metadata,
+		Manifest:    manifest,
 	}
 
 	opf := epub.Opf{
